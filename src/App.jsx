@@ -12,16 +12,16 @@ const initialIssues = [    
         id: 3, status: 'New', owner: 'Sam', effort: 1,         
         created: new Date(' 2018-08-16'), due: new Date(' 2018-09-30'),       title: 'Not showing anything'
     },
-    // {
-    //     id: 4, status: 'New', owner: 'Jill', effort: 10,         
-    //     created: new Date(' 2018-09-16'), due: new Date(' 2018-10-30'),       title: 'No response when user clicks the submit button. From time to time, the whole webpage freezes'
-    // }
+    {
+        id: 4, status: 'New', owner: 'Jill', effort: 10,         
+        created: new Date(' 2018-09-16'), due: new Date(' 2018-10-30'),       title: 'No response when user clicks the submit button. From time to time, the whole webpage freezes'
+    }
 ];
 
-const sampleIssue = {
-    status: 'New', owner: 'Pieta',
-    title: 'Completion date shouled be optional.'
-};
+// const sampleIssue = {
+//     status: 'New', owner: 'Pieta',
+//     title: 'Completion date shouled be optional.'
+// };
 
 // create an empty object to copy sampleIssue into
 // const emptyIssue = {}
@@ -37,7 +37,7 @@ class IssueFilter extends React.Component {
 class IssueRow extends React.Component {
     render() {
         const issue = this.props.issue;
-        console.log('IssueRow Render is called')
+        // console.log('IssueRow Render is called')
         return (
             <tr>
                 <td>{issue.id}</td>
@@ -64,44 +64,10 @@ class BorderedWarp extends React.Component {
 }
 
 class IssueTable extends React.Component {
-    constructor() {
-        super();
-        // this.state = {issues: initialIssues};
-        this.state = {issues: []};
-        setTimeout(() => {
-            this.createIssue(sampleIssue);
-        }, 2000);
-        //create another issue using the copy of the sampleIssue
-        // setTimeout(() => {
-        //     this.createIssue(Object.assign(emptyIssue, sampleIssue));
-        // }, 2000)
-
-    }
-
-
-    componentDidMount() {
-        this.loadDate();
-    }
-
-    loadDate() {
-        setTimeout(() => {
-            this.setState({issues: initialIssues});
-        }, 500)
-    }
-
-    createIssue(issue) {
-        issue.id = this.state.issues.length + 1;
-        issue.created = new Date();
-        let newIssueList = this.state.issues.slice();
-        newIssueList.push(issue);
-        this.setState({issues: newIssueList});
-    }
-
     render() {
-             const issueRows = this.state.issues.map(issue => 
+             const issueRows = this.props.issues.map(issue => 
             <IssueRow key={issue.id} issue={issue}/>
-            );
-
+            ); 
         return (
             <table className="bordered-table">
                 <thead >
@@ -122,23 +88,79 @@ class IssueTable extends React.Component {
 }
 
 class IssueAdd extends React.Component {
+    constructor() {
+        super();
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        const form = document.forms.issueAdd
+        const issue = {
+            owner: form.owner.value,
+            title: form.title.value,
+            status: 'New'
+        };
+        this.props.createIssue(issue);
+        form.owner.value = '';
+        form.title.value = '';
+    }
     render() {
         return (
-            <div>Issue Add Placeholder</div>
+            <form name="issueAdd" onSubmit={this.handleSubmit}>
+                <input type="text" name="owner" placeholder="Owner"/>
+                <input type="text" name="title" placeholder="Title"/>
+                <button>Add</button>
+            </form>
         )
     }
 }
 
 class IssueList extends React.Component {
+    constructor() {
+        super();
+        // set the state variable issues to an empty array
+        this.state = { issues: [] };
+        // bind the createIssue method to keyword 'this'
+        // the createIssue method also updates the state
+        this.createIssue = this.createIssue.bind(this);
+    }
+
+    componentDidMount() {
+        // call the loadData method when the component mount because the DOM is ready, component can be re-rendered
+        this.loadData();
+    }
+
+    // load the data of the array into the state variable issues
+    loadData() {
+        setTimeout(() => {
+            this.setState({issues: initialIssues});
+        }, 500)
+    }
+
+    createIssue(issue) {
+        // set the issue id to the last id of the array issues plus 1
+        issue.id = this.state.issues.length + 1;
+        issue.created = new Date();
+        // copy the current issues array into a new array called newIssueList
+        const newIssueList = this.state.issues.slice();
+        // push the new issue to the new array
+        newIssueList.push(issue);
+        // update the state to newIssueList which has the last issue
+        this.setState({issues: newIssueList});
+    }
+    
     render() {
         return (
             <React.Fragment>
                 <h1>Issue Tracker</h1>
                 <IssueFilter />
                 <hr />
-                <IssueTable />
+                {/* passing the state variable issues to the IssueTable component */}
+                <IssueTable issues={this.state.issues}/>
                 <hr />
-                <IssueAdd />
+                {/* passing the createIssue method as a props to IssueAdd Component. In IssueAdd, use this.props.createIssue() to access this method */}
+                <IssueAdd createIssue={this.createIssue}/>
             </React.Fragment>
         )
     }
