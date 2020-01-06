@@ -34,9 +34,9 @@ class IssueFilter extends React.Component {
     }
 }
 
-class IssueRow extends React.Component {
-    render() {
-        const issue = this.props.issue;
+function IssueRow (props) {
+
+        const issue = props.issue;
         // console.log('IssueRow Render is called')
         return (
             <tr>
@@ -50,7 +50,7 @@ class IssueRow extends React.Component {
             </tr>
         )
     }
-}
+
 
 class BorderedWarp extends React.Component {
     render() {
@@ -63,29 +63,28 @@ class BorderedWarp extends React.Component {
     }
 }
 
-class IssueTable extends React.Component {
-    render() {
-             const issueRows = this.props.issues.map(issue => 
+function IssueTable(props) {
+    const issueRows = props.issues.map(issue => 
             <IssueRow key={issue.id} issue={issue}/>
             ); 
-        return (
-            <table className="bordered-table">
-                <thead >
-                    <th>ID</th>
-                    <th>Status</th>
-                    <th>Owner</th>
-                    <th>Created</th>
-                    <th>Effort</th>
-                    <th>Due Date</th>
-                    <th>Title</th>
-                </thead>
-                <tbody>
-                    {issueRows}
-                </tbody>
-            </table>
-        )
-    }
+    return (
+        <table className="bordered-table">
+            <thead >
+                <th>ID</th>
+                <th>Status</th>
+                <th>Owner</th>
+                <th>Created</th>
+                <th>Effort</th>
+                <th>Due Date</th>
+                <th>Title</th>
+            </thead>
+            <tbody>
+                {issueRows}
+            </tbody>
+        </table>
+    )
 }
+
 
 class IssueAdd extends React.Component {
     constructor() {
@@ -101,6 +100,7 @@ class IssueAdd extends React.Component {
             title: form.title.value,
             status: 'New'
         };
+        // calling createIssue() method in IssueList component because it's passed in as a props in IssueList
         this.props.createIssue(issue);
         form.owner.value = '';
         form.title.value = '';
@@ -121,7 +121,7 @@ class IssueList extends React.Component {
         super();
         // set the state variable issues to an empty array
         this.state = { issues: [] };
-        // bind the createIssue method to keyword 'this'
+        // createIssue() method is from IssueAdd component, but the keyword 'this' refers to the IssueList component. So we need to bind the createIssue method to keyword 'this'
         // the createIssue method also updates the state
         this.createIssue = this.createIssue.bind(this);
     }
@@ -156,7 +156,7 @@ class IssueList extends React.Component {
                 <h1>Issue Tracker</h1>
                 <IssueFilter />
                 <hr />
-                {/* passing the state variable issues to the IssueTable component */}
+                {/* passing the state variable issues as a prop to the IssueTable component. In IssueTable, we can use this.props.issues  */}
                 <IssueTable issues={this.state.issues}/>
                 <hr />
                 {/* passing the createIssue method as a props to IssueAdd Component. In IssueAdd, use this.props.createIssue() to access this method */}

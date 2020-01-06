@@ -78,33 +78,16 @@ function (_React$Component) {
   return IssueFilter;
 }(React.Component);
 
-var IssueRow =
-/*#__PURE__*/
-function (_React$Component2) {
-  _inherits(IssueRow, _React$Component2);
+function IssueRow(props) {
+  var issue = props.issue; // console.log('IssueRow Render is called')
 
-  function IssueRow() {
-    _classCallCheck(this, IssueRow);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(IssueRow).apply(this, arguments));
-  }
-
-  _createClass(IssueRow, [{
-    key: "render",
-    value: function render() {
-      var issue = this.props.issue; // console.log('IssueRow Render is called')
-
-      return React.createElement("tr", null, React.createElement("td", null, issue.id), React.createElement("td", null, issue.status), React.createElement("td", null, issue.owner), React.createElement("td", null, issue.created.toDateString()), React.createElement("td", null, issue.effort), React.createElement("td", null, issue.due ? issue.due.toDateString() : new Date(' 2018-12-24').toDateString()), React.createElement("td", null, issue.title));
-    }
-  }]);
-
-  return IssueRow;
-}(React.Component);
+  return React.createElement("tr", null, React.createElement("td", null, issue.id), React.createElement("td", null, issue.status), React.createElement("td", null, issue.owner), React.createElement("td", null, issue.created.toDateString()), React.createElement("td", null, issue.effort), React.createElement("td", null, issue.due ? issue.due.toDateString() : new Date(' 2018-12-24').toDateString()), React.createElement("td", null, issue.title));
+}
 
 var BorderedWarp =
 /*#__PURE__*/
-function (_React$Component3) {
-  _inherits(BorderedWarp, _React$Component3);
+function (_React$Component2) {
+  _inherits(BorderedWarp, _React$Component2);
 
   function BorderedWarp() {
     _classCallCheck(this, BorderedWarp);
@@ -128,39 +111,22 @@ function (_React$Component3) {
   return BorderedWarp;
 }(React.Component);
 
-var IssueTable =
-/*#__PURE__*/
-function (_React$Component4) {
-  _inherits(IssueTable, _React$Component4);
-
-  function IssueTable() {
-    _classCallCheck(this, IssueTable);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(IssueTable).apply(this, arguments));
-  }
-
-  _createClass(IssueTable, [{
-    key: "render",
-    value: function render() {
-      var issueRows = this.props.issues.map(function (issue) {
-        return React.createElement(IssueRow, {
-          key: issue.id,
-          issue: issue
-        });
-      });
-      return React.createElement("table", {
-        className: "bordered-table"
-      }, React.createElement("thead", null, React.createElement("th", null, "ID"), React.createElement("th", null, "Status"), React.createElement("th", null, "Owner"), React.createElement("th", null, "Created"), React.createElement("th", null, "Effort"), React.createElement("th", null, "Due Date"), React.createElement("th", null, "Title")), React.createElement("tbody", null, issueRows));
-    }
-  }]);
-
-  return IssueTable;
-}(React.Component);
+function IssueTable(props) {
+  var issueRows = props.issues.map(function (issue) {
+    return React.createElement(IssueRow, {
+      key: issue.id,
+      issue: issue
+    });
+  });
+  return React.createElement("table", {
+    className: "bordered-table"
+  }, React.createElement("thead", null, React.createElement("th", null, "ID"), React.createElement("th", null, "Status"), React.createElement("th", null, "Owner"), React.createElement("th", null, "Created"), React.createElement("th", null, "Effort"), React.createElement("th", null, "Due Date"), React.createElement("th", null, "Title")), React.createElement("tbody", null, issueRows));
+}
 
 var IssueAdd =
 /*#__PURE__*/
-function (_React$Component5) {
-  _inherits(IssueAdd, _React$Component5);
+function (_React$Component3) {
+  _inherits(IssueAdd, _React$Component3);
 
   function IssueAdd() {
     var _this;
@@ -181,7 +147,8 @@ function (_React$Component5) {
         owner: form.owner.value,
         title: form.title.value,
         status: 'New'
-      };
+      }; // calling createIssue() method in IssueList component because it's passed in as a props in IssueList
+
       this.props.createIssue(issue);
       form.owner.value = '';
       form.title.value = '';
@@ -209,8 +176,8 @@ function (_React$Component5) {
 
 var IssueList =
 /*#__PURE__*/
-function (_React$Component6) {
-  _inherits(IssueList, _React$Component6);
+function (_React$Component4) {
+  _inherits(IssueList, _React$Component4);
 
   function IssueList() {
     var _this2;
@@ -221,7 +188,7 @@ function (_React$Component6) {
 
     _this2.state = {
       issues: []
-    }; // bind the createIssue method to keyword 'this'
+    }; // createIssue() method is from IssueAdd component, but the keyword 'this' refers to the IssueList component. So we need to bind the createIssue method to keyword 'this'
     // the createIssue method also updates the state
 
     _this2.createIssue = _this2.createIssue.bind(_assertThisInitialized(_this2));
