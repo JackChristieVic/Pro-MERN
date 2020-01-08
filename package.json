@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apollo-server-express": "^2.9.15",
     "express": "^4.17.1",
+    "graphql": "^0.13.2",
     "nodemon": "^2.0.2"
   },
   "devDependencies": {
