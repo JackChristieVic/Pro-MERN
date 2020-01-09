@@ -1,5 +1,9 @@
 "use strict";
 
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -17,45 +21,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var initialIssues = [{
-  id: 1,
-  status: 'New',
-  owner: 'Ravan',
-  effort: 5,
-  created: new Date(' 2018-08-15'),
-  due: undefined,
-  title: 'Error in console when clicking Add'
-}, {
-  id: 2,
-  status: 'Assigned',
-  owner: 'Eddie',
-  effort: 14,
-  created: new Date(' 2018-08-16'),
-  due: new Date(' 2018-08-30'),
-  title: 'Missing bottom border on panel'
-}, {
-  id: 3,
-  status: 'New',
-  owner: 'Sam',
-  effort: 1,
-  created: new Date(' 2018-08-16'),
-  due: new Date(' 2018-09-30'),
-  title: 'Not showing anything'
-}, {
-  id: 4,
-  status: 'New',
-  owner: 'Jill',
-  effort: 10,
-  created: new Date(' 2018-09-16'),
-  due: new Date(' 2018-10-30'),
-  title: 'No response when user clicks the submit button. From time to time, the whole webpage freezes'
-}]; // const sampleIssue = {
-//     status: 'New', owner: 'Pieta',
-//     title: 'Completion date shouled be optional.'
-// };
-// create an empty object to copy sampleIssue into
-// const emptyIssue = {}
 
 var IssueFilter =
 /*#__PURE__*/
@@ -78,10 +43,20 @@ function (_React$Component) {
   return IssueFilter;
 }(React.Component);
 
+var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
+
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) {
+    return new Date(value);
+  }
+
+  return value;
+}
+
 function IssueRow(props) {
   var issue = props.issue; // console.log('IssueRow Render is called')
 
-  return React.createElement("tr", null, React.createElement("td", null, issue.id), React.createElement("td", null, issue.status), React.createElement("td", null, issue.owner), React.createElement("td", null, issue.created.toDateString()), React.createElement("td", null, issue.effort), React.createElement("td", null, issue.due ? issue.due.toDateString() : new Date(' 2018-12-24').toDateString()), React.createElement("td", null, issue.title));
+  return React.createElement("tr", null, React.createElement("td", null, issue.id), React.createElement("td", null, issue.status), React.createElement("td", null, issue.owner), React.createElement("td", null, issue.created.toDateString()), React.createElement("td", null, issue.effort), React.createElement("td", null, issue.due ? issue.due.toDateString() : ' '), React.createElement("td", null, issue.title));
 }
 
 var BorderedWarp =
@@ -146,7 +121,7 @@ function (_React$Component3) {
       var issue = {
         owner: form.owner.value,
         title: form.title.value,
-        status: 'New'
+        due: new Date(new Date().getTime() + 1000 * 3600 * 24 * 10)
       }; // calling createIssue() method in IssueList component because it's passed in as a props in IssueList
 
       this.props.createIssue(issue);
@@ -204,30 +179,105 @@ function (_React$Component4) {
 
   }, {
     key: "loadData",
-    value: function loadData() {
-      var _this3 = this;
+    value: function () {
+      var _loadData = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee() {
+        var query, response, body, result;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                query = "\n            query {\n                issueList {\n                    id title status owner created effort due\n                }\n            }\n        ";
+                _context.next = 3;
+                return fetch('/graphql', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    query: query
+                  })
+                });
 
-      setTimeout(function () {
-        _this3.setState({
-          issues: initialIssues
-        });
-      }, 500);
-    }
+              case 3:
+                response = _context.sent;
+                _context.next = 6;
+                return response.text();
+
+              case 6:
+                body = _context.sent;
+                result = JSON.parse(body, jsonDateReviver);
+                this.setState({
+                  issues: result.data.issueList
+                });
+
+              case 9:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function loadData() {
+        return _loadData.apply(this, arguments);
+      }
+
+      return loadData;
+    }()
   }, {
     key: "createIssue",
-    value: function createIssue(issue) {
-      // set the issue id to the last id of the array issues plus 1
-      issue.id = this.state.issues.length + 1;
-      issue.created = new Date(); // copy the current issues array into a new array called newIssueList
+    value: function () {
+      var _createIssue = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee2(issue) {
+        var query, response;
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                query = "mutation issueAdd($issue: IssueInputs!) {\n            issueAdd(issue: $issue) {\n              id\n            }\n          }";
+                _context2.next = 3;
+                return fetch('/graphql', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    query: query,
+                    variables: {
+                      issue: issue
+                    }
+                  })
+                });
 
-      var newIssueList = this.state.issues.slice(); // push the new issue to the new array
+              case 3:
+                response = _context2.sent;
+                this.loadData(); //     // set the issue id to the last id of the array issues plus 1
+                //     issue.id = this.state.issues.length + 1;
+                //     issue.created = new Date();
+                //     // copy the current issues array into a new array called newIssueList
+                //     const newIssueList = this.state.issues.slice();
+                //     // push the new issue to the new array
+                //     newIssueList.push(issue);
+                //     // update the state to newIssueList which has the last issue
+                //     this.setState({issues: newIssueList});
 
-      newIssueList.push(issue); // update the state to newIssueList which has the last issue
+              case 5:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
 
-      this.setState({
-        issues: newIssueList
-      });
-    }
+      function createIssue(_x) {
+        return _createIssue.apply(this, arguments);
+      }
+
+      return createIssue;
+    }()
   }, {
     key: "render",
     value: function render() {
@@ -243,4 +293,15 @@ function (_React$Component4) {
 }(React.Component);
 
 var element = React.createElement(IssueList, null);
-ReactDOM.render(element, document.getElementById('contents'));
+ReactDOM.render(element, document.getElementById('contents')); // mutation {     
+//     issueAdd( issue:{         
+//         title: "Completion date should be optional",         
+//         owner: "Pieta",         
+//         due: "2018-12-13",    
+//     }) {         
+//         id         
+//         due        
+//          created         
+//          status    
+//         } 
+//     }
