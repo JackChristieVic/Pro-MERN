@@ -32,6 +32,31 @@ function IssueRow (props) {
         )
     }
 
+async function graphQLFetch(query, variables = {}) {
+    try {
+        const response = await fetch('/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type' : 'application/json'},
+            body: JSON.stringify({ query, variables })
+        });
+        const body = await response.text();
+        const result = JSON.parse(body, jsonDateReviver);
+
+        if(result.errors) {
+            const error = result.errors[0];
+            if(error.extensions.code === 'BAD_USER_INPUT') {
+                const details = error.extensions.exception.errors.join('\n ');
+                alert(`${error.message}: \n ${details}`);
+            }else{
+                alert(`${error.extensions.code}: ${error.message}`);
+            }
+        }
+        return result.data;
+    } catch (error) {
+        alert(`Error in sending data to server: ${error.message}`);
+    }
+}
+
 
 class BorderedWarp extends React.Component {
     render() {
@@ -97,6 +122,8 @@ class IssueAdd extends React.Component {
     }
 }
 
+
+
 class IssueList extends React.Component {
     constructor() {
         super();
@@ -122,18 +149,23 @@ class IssueList extends React.Component {
             }
         `;
 
-        const response = await fetch('/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type' : 'application/json'},
-            body: JSON.stringify( {query} )
-        });
+        // const response = await fetch('/graphql', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type' : 'application/json'},
+        //     body: JSON.stringify( {query} )
+        // });
 
-        const body = await response.text();
-        const result = JSON.parse( body, jsonDateReviver );
+        // const body = await response.text();
+        // const result = JSON.parse( body, jsonDateReviver );
         
-        this.setState({issues: result.data.issueList});
+        // this.setState({issues: result.data.issueList});
+        const data = await graphQLFetch(query);
+        if(data) {
+            this.setState( {issues: data.issueList} );
+            }
+        }
         
-    }
+    
 
     async createIssue(issue) {
         const query = `mutation issueAdd($issue: IssueInputs!) {
@@ -142,12 +174,16 @@ class IssueList extends React.Component {
             }
           }`;
 
-        const response = await fetch('/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type' : 'application/json'},
-            body: JSON.stringify( {query, variables: { issue } } )
-        });
-        this.loadData();
+        // const response = await fetch('/graphql', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type' : 'application/json'},
+        //     body: JSON.stringify( {query, variables: { issue } } )
+        // });
+        // this.loadData();
+        const data = await graphQLFetch(query, { issue });
+        if(data) {
+            this.loadData();
+        }
 
     //     // set the issue id to the last id of the array issues plus 1
     //     issue.id = this.state.issues.length + 1;
@@ -158,6 +194,8 @@ class IssueList extends React.Component {
     //     newIssueList.push(issue);
     //     // update the state to newIssueList which has the last issue
     //     this.setState({issues: newIssueList});
+
+        
     }
     
     render() {
