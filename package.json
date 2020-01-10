@@ -4,7 +4,7 @@
   "description": "",
   "main": "server/server.js",
   "scripts": {
-    "start": "nodemon -w -e js,graphql server/server.js",
+    "start": "nodemon -w server -e js,graphql server/server.js",
     "compile": "babel src --out-dir public",
     "watch": "babel src --out-dir public --watch --verbose"
   },
@@ -13,7 +13,8 @@
   "dependencies": {
     "apollo-server-express": "^2.9.15",
     "express": "^4.17.1",
-    "graphql": "^0.13.2",
+    "graphql": "^14.5.8",
+    "mongodb": "^3.4.1",
     "nodemon": "^2.0.2"
   },
   "devDependencies": {
