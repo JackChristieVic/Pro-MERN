@@ -13,12 +13,12 @@ function testWithCallbacks(callback) {
             return;
         }
         console.log('Connected to MongoDB');
-        
+
         const db = client.db();
         const collection = db.collection('employees');
     
         const employee = { id: 1, name: 'A. callback', age: 23};
-        collection.insertOne(employee, (err, result => {
+        collection.insertOne(employee, (err, result) => {
             if(err) {
                 client.close();
                 callback(err);
@@ -26,7 +26,7 @@ function testWithCallbacks(callback) {
             }
             console.log('Result of insert: \n', result.insertedId);
 
-            collection.find( {_id: reslut.insertedId }).toArray((err, docs) => {
+            collection.find( {_id: result.insertedId }).toArray((err, docs) => {
                     if(err) {
                         client.close();
                         callback(err);
@@ -36,7 +36,7 @@ function testWithCallbacks(callback) {
                 client.close();
                 callback(err);
             });
-        }));
+        });
     });
 }
 
