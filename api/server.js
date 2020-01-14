@@ -3,7 +3,7 @@ const fs = require('fs');
 const express = require('express');
 // create an Express application/object
 const app = express();
-
+const { ApolloServer } = require('apollo-server-express');
 const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
 const { MongoClient } = require('mongodb');
@@ -13,16 +13,18 @@ const url = 'mongodb://localhost/issuetracker';
 // mLab URL replace UUU with user, PPP with password, XXX with hostname 
 
 let aboutMessage = 'Issue Tracker API v1.0';
-// const issuesDB = [    
-//     {
-//         id: 1, status: 'New', owner: 'Ravan', effort: 5,         
-//         created: new Date(' 2018-08-15'), due: undefined,         
-//         title: 'Error in console when clicking Add'
-//     },    
-//     {
-//         id: 2, status: 'Assigned', owner: 'Eddie', effort: 14,         created: new Date(' 2018-08-16'), due: new Date(' 2018-08-30'),       title: 'Missing bottom border on panel'
-//     }
-// ];
+let db;
+
+const issuesDB = [    
+    {
+        id: 1, status: 'New', owner: 'Ravan', effort: 5,         
+        created: new Date(' 2018-08-15'), due: undefined,         
+        title: 'Error in console when clicking Add'
+    },    
+    {
+        id: 2, status: 'Assigned', owner: 'Eddie', effort: 14,         created: new Date(' 2018-08-16'), due: new Date(' 2018-08-30'),       title: 'Missing bottom border on panel'
+    }
+];
 
 
 const GraphQLDate = new GraphQLScalarType({
@@ -74,49 +76,63 @@ function issueValidate(issue) {
     }
 }
 
-function issueAdd(_, { issue }) {
+async function issueAdd(_, { issue }) {
     issueValidate(issue);
+    const errors = [];
     issue.created = new Date();
-    issue.id = issuesDB.length + 1;
+    issue.id = await getNextSequence('issues');
+    const result = await db.collection('issues').insertOne(issue)
+    const savedIssue = await db.collection('issues').findOne({ _id: result.insertedId });
+    return savedIssue;
+    // issue.id = issuesDB.length + 1;
     // if(issue.status == undefined) { issue.status = 'New'}
-    issuesDB.push(issue);
-    return issue;
+    // issuesDB.push(issue);
+    // return issue;
 }
 
-const { ApolloServer } = require('apollo-server-express');
-const server = new ApolloServer({
-    typeDefs: fs.readFileSync('./server/schema.graphql', 'utf-8'),
-    resolvers,
-    formatError: error => {
-        console.log(error);
-        return error;
-    }
-})
-
-let db;
 async function connectToDb() {
-    const client = await MongoClient(url, { useNewUrlParse: true });
+    const client = await new MongoClient(url, { useNewUrlParse: true,  useUnifiedTopology: true });
     await client.connect();
     console.log('Connected to MongoDB at ', url);
     db = client.db();
 }
+
+async function getNextSequence(name) {
+    const result = await db.collection('counters').findOneAndUpdate(
+        { _id: name },
+        { $inc: { current: 1 } },
+        { returnOriginal: false },
+    );
+    return result.value.current;
+}
+
+const server = new ApolloServer({
+    typeDefs: fs.readFileSync('schema.graphql', 'utf-8'),
+    resolvers,
+    formatError: error => {
+        console.log(error);
+        return error;
+    },
+});
+
+const fileServerMiddleware = express.static('public');
+// app.use('/', fileServerMiddleware);
 
 server.applyMiddleware({ app, path: '/graphql' });
 
 const PORT = 3000;
 
 // using the static middleware function to serve static files in the public folder
-const fileServerMiddleware = express.static('public');
-app.use('/', fileServerMiddleware);
+
 (async function() {
     try {
         await connectToDb();
         app.listen(PORT, () => {
-            console.log(`App is running on port ${PORT}`)
+            console.log(`API Server is running on port ${PORT}`)
         });
     } catch (error) {
         console.log('ERROR:', error)
     }
-})
+})();
 
 

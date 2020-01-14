@@ -17,12 +17,15 @@ function testWithCallbacks(callback) {
         }
         console.log('Connected to MongoDB');
 
+        // obtain the db connection by calling db method in client object
         const db = client.db();
+        // get the collection after connecting to database
+        // if the collection doesn't exit, it'll be created
         const collection = db.collection('employees');
     
         const employee = { id: 1, name: 'A. callback', age: 23};
-        // insert one document into the employees database, asynchronously
-        // by passing a function with error and result as params.
+
+        // insert one document into the employees database, asynchronously by passing a function with error and result as params.
         collection.insertOne(employee, (err, result) => {
             if(err) {
                 client.close();
@@ -46,9 +49,10 @@ function testWithCallbacks(callback) {
 }
 
 
+
+// use ASYNC / AWAIT instead of CALLBACKS
 async function testWithAsync() {
     console.log('\n--- TestWithCallbacks ---');
-    // create a new client 
     const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true  });
     try {
         // make a connection to the local database by using the async method connect()
@@ -59,14 +63,10 @@ async function testWithAsync() {
         const collection = db.collection('employees');
     
         const employee = { id: 2, name: 'A. Async', age: 100};
-        // insert one document into the employees database, asynchronously
-        // by passing a function with error and result as params.
         const result = await collection.insertOne(employee);
-
-      
         console.log('Result of insert: \n', result.insertedId);
+
         const docs = await collection.find( {_id: result.insertedId }).toArray();
-                 
         console.log('Result of find: \n', docs);
     } catch (error) {
         console.log(error);

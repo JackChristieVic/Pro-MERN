@@ -24,7 +24,10 @@ const issuesDB = [    
 
 db.issues.insertMany(issuesDB);
 const count = db.issues.count();
-print('Inserted', count, 'issues');
+print('Inserted', count, 'issues into database named', db);
+
+db.counters.remove({ _id: 'issues' });
+db.counters.insert({ _id: 'issues', current: count });
 
 db.issues.createIndex({ id: 1 }, {unique: true} );
 db.issues.createIndex({ status: 1 });
